@@ -9,6 +9,7 @@
     }
   ],
   "rewrites": [
-    { "source": "/((?!sw.js|manifest.json|icon-192.png|icon-512.png).*)", "destination": "/index.html" }
+    { "source": "/install", "destination": "/install.html" },
+    { "source": "/((?!sw.js|manifest.json|icon-192.png|icon-512.png|install.html).*)", "destination": "/index.html" }
   ]
 }
