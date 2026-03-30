@@ -888,7 +888,7 @@ async function connectBank() {
     }
     TellerConnect.setup({
       applicationId: TELLER_APP_ID,
-      environment: 'development',
+      environment: 'sandbox',
       onSuccess: async e => {
         await api('/teller/enroll', {
           method: 'POST',
