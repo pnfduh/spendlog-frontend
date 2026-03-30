@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="SpendLog"/>
+  <meta name="theme-color" content="#111113"/>
+  <title>SpendLog</title>
+  <link rel="manifest" href="manifest.json"/>
+  <link rel="apple-touch-icon" href="icon-192.png"/>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+    :root {
+      --bg:       #111113;
+      --surface:  #1c1c1f;
+      --surface2: #26262a;
+      --border:   rgba(255,255,255,0.08);
+      --accent:   #f0a500;
+      --text:     #f2f2f5;
+      --muted:    #888899;
+      --danger:   #ff4560;
+      --green:    #22d07a;
+      --sans:     'DM Sans', system-ui, sans-serif;
+      --mono:     'DM Mono', monospace;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bot: env(safe-area-inset-bottom, 0px);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      -webkit-font-smoothing: antialiased;
+      overscroll-behavior: none;
+    }
+
+    button { cursor: pointer; border: none; background: none; font-family: inherit; color: inherit; }
+    input  { font-family: inherit; color: inherit; border: none; outline: none; background: none; }
+
+    /* ── LAYOUT ── */
+    #app {
+      display: flex;
+      flex-direction: column;
+      height: 100dvh;
+      padding-top: var(--safe-top);
+      padding-bottom: var(--safe-bot);
+    }
+
+    /* ── HEADER ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 1.05rem;
+      letter-spacing: -0.02em;
+    }
+    .logo-icon {
+      width: 30px; height: 30px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .logo-icon svg { width: 16px; height: 16px; }
+    .month-nav {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .month-label {
+      font-size: 0.95rem;
+      font-weight: 600;
+      min-width: 110px;
+      text-align: center;
+    }
+    .nav-btn {
+      width: 32px; height: 32px;
+      background: var(--surface2);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--muted);
+      font-size: 18px;
+      transition: color 0.15s, background 0.15s;
+    }
+    .nav-btn:active { background: var(--surface); color: var(--text); }
+
+    /* ── SUMMARY BAR ── */
+    .summary {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .summary-item {
+      flex: 1;
+      padding: 10px 16px;
+      border-right: 1px solid var(--border);
+    }
+    .summary-item:last-child { border-right: none; }
+    .summary-label { font-size: 0.65rem; color: var(--muted); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+    .summary-val   { font-size: 1rem; font-weight: 700; letter-spacing: -0.02em; }
+
+    /* ── CALENDAR ── */
+    .cal-wrap { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    .cal-weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      padding: 6px 8px 0;
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      z-index: 1;
+      border-bottom: 1px solid var(--border);
+    }
+    .wd { text-align: center; font-size: 0.65rem; font-family: var(--mono); color: var(--muted); padding: 4px 0; }
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+      padding: 8px;
+    }
+    .cal-cell {
+      aspect-ratio: 1;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 4px 2px;
+      transition: background 0.1s;
+      position: relative;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .cal-cell.empty { cursor: default; pointer-events: none; }
+    .cal-cell:not(.empty):active { background: var(--surface2) !important; }
+    .cal-cell.today { outline: 1.5px solid var(--accent); outline-offset: -1px; }
+    .cal-cell.has-spend { background: rgba(240,165,0,0.08); }
+    .cal-cell.high-spend { background: rgba(240,165,0,0.2); }
+    .cal-cell.selected { background: rgba(240,165,0,0.25) !important; }
+    .cal-day { font-size: 0.78rem; font-weight: 600; line-height: 1; }
+    .cal-amt { font-size: 0.5rem; color: var(--accent); font-family: var(--mono); margin-top: 3px; line-height: 1; }
+
+    /* ── DAY DRAWER ── */
+    .drawer-overlay {
+      position: fixed; inset: 0; z-index: 50;
+      background: rgba(0,0,0,0.5);
+      opacity: 0;
+      transition: opacity 0.25s;
+      pointer-events: none;
+    }
+    .drawer-overlay.open { opacity: 1; pointer-events: all; }
+    .drawer {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      z-index: 51;
+      background: var(--surface);
+      border-radius: 20px 20px 0 0;
+      padding-bottom: calc(16px + var(--safe-bot));
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.32,0.72,0,1);
+      max-height: 75dvh;
+      display: flex;
+      flex-direction: column;
+    }
+    .drawer.open { transform: translateY(0); }
+    .drawer-handle {
+      width: 36px; height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin: 12px auto 0;
+      flex-shrink: 0;
+    }
+    .drawer-header {
+      padding: 12px 20px 10px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .drawer-date  { font-size: 0.78rem; color: var(--muted); font-family: var(--mono); }
+    .drawer-total { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.04em; color: var(--accent); }
+    .drawer-count { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+    .drawer-txns  { overflow-y: auto; -webkit-overflow-scrolling: touch; flex: 1; padding: 8px 0; }
+
+    /* ── TRANSACTION ROW ── */
+    .txn {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+    }
+    .txn + .txn { border-top: 1px solid var(--border); }
+    .txn-icon { font-size: 20px; width: 38px; height: 38px; background: var(--surface2); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .txn-info { flex: 1; min-width: 0; }
+    .txn-name { font-size: 0.875rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .txn-cat  { font-size: 0.7rem; color: var(--muted); margin-top: 2px; }
+    .txn-badge { display: inline-block; font-size: 0.55rem; font-family: var(--mono); padding: 1px 5px; border-radius: 4px; background: rgba(240,165,0,0.15); color: var(--accent); margin-left: 5px; vertical-align: middle; }
+    .txn-amt  { font-size: 0.9rem; font-weight: 700; font-family: var(--mono); flex-shrink: 0; }
+
+    /* ── BOTTOM NAV ── */
+    .bottom-nav {
+      display: flex;
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+      background: var(--bg);
+    }
+    .tab {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      padding: 10px 8px;
+      font-size: 0.6rem;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: color 0.15s;
+    }
+    .tab svg { width: 22px; height: 22px; }
+    .tab.active { color: var(--accent); }
+
+    /* ── PAGES ── */
+    .page { display: none; flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    .page.active { display: flex; flex-direction: column; }
+
+    /* ── TRANSACTIONS PAGE ── */
+    .txns-page { flex: 1; }
+    .txns-page .txn { padding: 12px 20px; }
+    .day-group-label {
+      padding: 10px 20px 4px;
+      font-size: 0.7rem;
+      font-family: var(--mono);
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background: var(--bg);
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ── BANKS PAGE ── */
+    .banks-page { padding: 20px; gap: 12px; }
+    .bank-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .bank-icon { font-size: 26px; }
+    .bank-info { flex: 1; }
+    .bank-name { font-size: 0.9rem; font-weight: 600; }
+    .bank-sub  { font-size: 0.72rem; color: var(--muted); margin-top: 3px; font-family: var(--mono); }
+    .bank-disconnect { font-size: 0.7rem; color: var(--danger); font-weight: 600; padding: 6px 10px; border-radius: 8px; background: rgba(255,69,96,0.08); }
+    .connect-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 16px;
+      background: var(--accent);
+      color: #000;
+      font-weight: 700;
+      font-size: 0.95rem;
+      border-radius: 14px;
+      width: 100%;
+      letter-spacing: -0.01em;
+    }
+    .connect-btn:active { opacity: 0.85; }
+    .page-title { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.03em; padding: 18px 20px 12px; flex-shrink: 0; }
+
+    /* ── UTILS ── */
+    .spinner { width: 22px; height: 22px; border: 2px solid var(--surface2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 32px auto; }
+    .empty { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 0.82rem; font-family: var(--mono); }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2.5"><rect x="2" y="5" width="20" height="16" rx="3"/><path d="M16 3v4M8 3v4M2 11h20"/><circle cx="8" cy="16" r="1.5" fill="#111"/><circle cx="12" cy="16" r="1.5" fill="#111"/><circle cx="16" cy="16" r="1.5" fill="#111"/></svg>
+      </div>
+      SpendLog
+    </div>
+    <div class="month-nav" id="month-nav">
+      <button class="nav-btn" id="prev-month">‹</button>
+      <div class="month-label" id="month-label">—</div>
+      <button class="nav-btn" id="next-month">›</button>
+    </div>
+  </header>
+
+  <!-- SUMMARY BAR -->
+  <div class="summary" id="summary-bar">
+    <div class="summary-item">
+      <div class="summary-label">This Month</div>
+      <div class="summary-val" id="s-month">—</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-label">Today</div>
+      <div class="summary-val" id="s-today">—</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-label">Transactions</div>
+      <div class="summary-val" id="s-count">—</div>
+    </div>
+  </div>
+
+  <!-- CALENDAR PAGE -->
+  <div class="page active" id="page-cal">
+    <div class="cal-wrap">
+      <div class="cal-weekdays">
+        <div class="wd">Su</div><div class="wd">Mo</div><div class="wd">Tu</div>
+        <div class="wd">We</div><div class="wd">Th</div><div class="wd">Fr</div><div class="wd">Sa</div>
+      </div>
+      <div class="cal-grid" id="cal-grid"><div class="spinner"></div></div>
+    </div>
+  </div>
+
+  <!-- TRANSACTIONS PAGE -->
+  <div class="page" id="page-txns">
+    <div class="page-title">All Transactions</div>
+    <div class="txns-page" id="all-txns-list"><div class="spinner"></div></div>
+  </div>
+
+  <!-- BANKS PAGE -->
+  <div class="page" id="page-banks">
+    <div class="page-title">Connected Banks</div>
+    <div class="banks-page" id="banks-list"><div class="spinner"></div></div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <div class="tab active" id="tab-cal" onclick="switchTab('cal')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      Calendar
+    </div>
+    <div class="tab" id="tab-txns" onclick="switchTab('txns')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
+      Transactions
+    </div>
+    <div class="tab" id="tab-banks" onclick="switchTab('banks')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 10h18M3 7l9-4 9 4M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/></svg>
+      Banks
+    </div>
+  </nav>
+</div>
+
+<!-- DAY DRAWER -->
+<div class="drawer-overlay" id="overlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-handle"></div>
+  <div class="drawer-header">
+    <div class="drawer-date" id="drawer-date">—</div>
+    <div class="drawer-total" id="drawer-total">$0.00</div>
+    <div class="drawer-count" id="drawer-count"></div>
+  </div>
+  <div class="drawer-txns" id="drawer-txns"></div>
+</div>
+
+<script>
+const API = 'https://spendlog-backend-production.up.railway.app/api/v1';
+const TELLER_APP_ID = 'app_pqf12skur572k1h1sm000';
+
+// Device ID — persisted per browser context
+function deviceId() {
+  let id = localStorage.getItem('sl_device');
+  if (!id) { id = crypto.randomUUID(); localStorage.setItem('sl_device', id); }
+  return id;
+}
+
+async function api(path, opts = {}) {
+  const r = await fetch(API + path, {
+    ...opts,
+    headers: { 'Content-Type': 'application/json', 'X-Device-ID': deviceId(), ...(opts.headers||{}) }
+  });
+  if (r.status === 204) return null;
+  const d = await r.json();
+  if (!r.ok) throw new Error(d.detail || r.status);
+  return d;
+}
+
+const fmt = a => new Intl.NumberFormat('en-US', { style:'currency', currency:'USD' }).format(parseFloat(a)||0);
+
+function fmtDate(ds) {
+  const t = new Date().toISOString().slice(0,10);
+  const y = new Date(Date.now()-864e5).toISOString().slice(0,10);
+  if (ds === t) return 'Today';
+  if (ds === y) return 'Yesterday';
+  return new Date(ds+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+}
+
+function emoji(cat) {
+  if (!cat) return '💳';
+  const c = cat.toLowerCase();
+  if (c.includes('food')||c.includes('dining')||c.includes('restaurant')) return '🍔';
+  if (c.includes('coffee')) return '☕';
+  if (c.includes('grocery')) return '🛒';
+  if (c.includes('travel')||c.includes('transport')) return '✈️';
+  if (c.includes('gas')||c.includes('fuel')) return '⛽';
+  if (c.includes('shop')||c.includes('retail')) return '🛍️';
+  if (c.includes('health')||c.includes('medical')) return '💊';
+  if (c.includes('entertainment')) return '🎬';
+  if (c.includes('subscription')) return '📱';
+  return '💳';
+}
+
+function txnHTML(t) {
+  const badge = t.pending ? '<span class="txn-badge">Pending</span>' : t.is_apple_pay ? '<span class="txn-badge"> Pay</span>' : '';
+  return `<div class="txn">
+    <div class="txn-icon">${emoji(t.category)}</div>
+    <div class="txn-info">
+      <div class="txn-name">${t.merchant_name||t.name}${badge}</div>
+      <div class="txn-cat">${t.category||'Uncategorized'}</div>
+    </div>
+    <div class="txn-amt">${fmt(t.amount)}</div>
+  </div>`;
+}
+
+// ── CALENDAR ──
+let Cal = { y: new Date().getFullYear(), m: new Date().getMonth()+1, data: {} };
+
+function updateHeader() {
+  document.getElementById('month-label').textContent =
+    new Date(Cal.y, Cal.m-1, 1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
+}
+
+async function loadCalendar() {
+  updateHeader();
+  document.getElementById('cal-grid').innerHTML = '<div class="spinner"></div>';
+  document.getElementById('s-month').textContent = '—';
+  document.getElementById('s-today').textContent = '—';
+  document.getElementById('s-count').textContent = '—';
+  try {
+    const data = await api(`/transactions/calendar?year=${Cal.y}&month=${Cal.m}`);
+    Cal.data = {};
+    const today = new Date().toISOString().slice(0,10);
+    let monthTotal = 0, txnCount = 0, todayTotal = 0;
+    const spends = [];
+    (data.days||[]).forEach(d => {
+      Cal.data[d.date] = d;
+      const amt = parseFloat(d.total_spent||0);
+      monthTotal += amt; txnCount += d.transaction_count||0; spends.push(amt);
+      if (d.date === today) todayTotal += amt;
+    });
+    const maxSpend = Math.max(...spends, 1);
+    document.getElementById('s-month').textContent = fmt(monthTotal);
+    document.getElementById('s-today').textContent = fmt(todayTotal);
+    document.getElementById('s-count').textContent = txnCount;
+    renderGrid(maxSpend, today);
+  } catch(e) {
+    document.getElementById('cal-grid').innerHTML = `<div class="empty" style="color:var(--danger);grid-column:1/-1">${e.message}</div>`;
+  }
+}
+
+function renderGrid(maxSpend, today) {
+  const first = new Date(Cal.y, Cal.m-1, 1).getDay();
+  const days  = new Date(Cal.y, Cal.m, 0).getDate();
+  let html = '';
+  for (let i = 0; i < first; i++) html += '<div class="cal-cell empty"></div>';
+  for (let d = 1; d <= days; d++) {
+    const ds = `${Cal.y}-${String(Cal.m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dd = Cal.data[ds];
+    const amt = dd ? parseFloat(dd.total_spent||0) : 0;
+    const ratio = amt / maxSpend;
+    let cls = 'cal-cell';
+    if (ds === today) cls += ' today';
+    if (ratio > 0.5) cls += ' high-spend';
+    else if (ratio > 0) cls += ' has-spend';
+    const amtLabel = amt > 0 ? `<div class="cal-amt">${fmt(amt)}</div>` : '';
+    html += `<div class="${cls}" onclick="openDay('${ds}')" data-date="${ds}">
+      <div class="cal-day">${d}</div>${amtLabel}
+    </div>`;
+  }
+  document.getElementById('cal-grid').innerHTML = html;
+}
+
+document.getElementById('prev-month').onclick = () => {
+  Cal.m--; if (Cal.m < 1) { Cal.m = 12; Cal.y--; } loadCalendar();
+};
+document.getElementById('next-month').onclick = () => {
+  Cal.m++; if (Cal.m > 12) { Cal.m = 1; Cal.y++; } loadCalendar();
+};
+
+// ── DRAWER ──
+function openDay(ds) {
+  document.querySelectorAll('.cal-cell.selected').forEach(c => c.classList.remove('selected'));
+  document.querySelector(`[data-date="${ds}"]`)?.classList.add('selected');
+  const dd = Cal.data[ds];
+  document.getElementById('drawer-date').textContent = fmtDate(ds);
+  document.getElementById('drawer-total').textContent = fmt(dd?.total_spent||0);
+  document.getElementById('drawer-count').textContent = dd ? `${dd.transaction_count} transaction${dd.transaction_count===1?'':'s'}` : 'No transactions';
+  document.getElementById('drawer-txns').innerHTML = dd?.transactions?.length
+    ? dd.transactions.map(txnHTML).join('')
+    : '<div class="empty">No spending this day</div>';
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('drawer').classList.add('open');
+}
+
+function closeDrawer() {
+  document.getElementById('overlay').classList.remove('open');
+  document.getElementById('drawer').classList.remove('open');
+}
+
+// ── TABS ──
+function switchTab(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+  document.getElementById('month-nav').style.display = name === 'cal' ? 'flex' : 'none';
+  document.getElementById('summary-bar').style.display = name === 'cal' ? 'flex' : 'none';
+  if (name === 'txns') loadAllTxns();
+  if (name === 'banks') loadBanks();
+}
+
+// ── ALL TRANSACTIONS ──
+async function loadAllTxns() {
+  const el = document.getElementById('all-txns-list');
+  el.innerHTML = '<div class="spinner"></div>';
+  try {
+    const end = new Date().toISOString().slice(0,10);
+    const start = new Date(Date.now()-30*864e5).toISOString().slice(0,10);
+    const data = await api(`/transactions?start_date=${start}&end_date=${end}&limit=200`);
+    const txns = data.transactions||[];
+    if (!txns.length) { el.innerHTML = '<div class="empty">No transactions in the last 30 days</div>'; return; }
+    // Group by date
+    const groups = {};
+    txns.forEach(t => {
+      const k = t.transaction_date;
+      if (!groups[k]) groups[k] = [];
+      groups[k].push(t);
+    });
+    el.innerHTML = Object.entries(groups).map(([ds, ts]) =>
+      `<div class="day-group-label">${fmtDate(ds)} · ${fmt(ts.reduce((s,t)=>s+parseFloat(t.amount),0))}</div>` +
+      ts.map(txnHTML).join('')
+    ).join('');
+  } catch(e) {
+    el.innerHTML = `<div class="empty" style="color:var(--danger)">${e.message}</div>`;
+  }
+}
+
+// ── BANKS ──
+async function loadBanks() {
+  const el = document.getElementById('banks-list');
+  el.innerHTML = '<div class="spinner"></div>';
+  try {
+    const accounts = await api('/teller/accounts').catch(() => []);
+    const cards = accounts.map(a => `
+      <div class="bank-card">
+        <div class="bank-icon">🏦</div>
+        <div class="bank-info">
+          <div class="bank-name">${a.institution_name||'Bank Account'}</div>
+          <div class="bank-sub">${a.account_subtype||a.account_type||'Account'}${a.mask?' · ••••'+a.mask:''}</div>
+        </div>
+        <button class="bank-disconnect" onclick="disconnectBank('${a.id}')">Remove</button>
+      </div>`).join('');
+    el.innerHTML = cards + `
+      <button class="connect-btn" onclick="connectBank()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        Connect a Bank
+      </button>`;
+  } catch(e) {
+    el.innerHTML = `<div class="empty" style="color:var(--danger)">${e.message}</div>`;
+  }
+}
+
+async function disconnectBank(id) {
+  if (!confirm('Remove this bank account?')) return;
+  await api('/teller/accounts/'+id, { method:'DELETE' }).catch(()=>{});
+  loadBanks();
+}
+
+async function connectBank() {
+  try {
+    if (!window.TellerConnect) {
+      await new Promise((res, rej) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdn.teller.io/connect/connect.js';
+        s.onload = res; s.onerror = rej;
+        document.head.appendChild(s);
+      });
+    }
+    TellerConnect.setup({
+      applicationId: TELLER_APP_ID,
+      environment: 'sandbox',
+      onSuccess: async e => {
+        await api('/teller/enroll', {
+          method: 'POST',
+          body: JSON.stringify({ access_token: e.accessToken, enrollment_id: e.id, institution_name: e.institution?.name })
+        });
+        loadBanks();
+        loadCalendar();
+      },
+      onExit: () => {},
+      onFailure: () => alert('Connection failed'),
+    }).open();
+  } catch(e) { alert('Failed: ' + e.message); }
+}
+
+// ── BOOT ──
+updateHeader();
+loadCalendar();
+</script>
+</body>
+</html>
