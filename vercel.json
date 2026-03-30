@@ -1,0 +1,14 @@
+{
+  "headers": [
+    {
+      "source": "/sw.js",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache" },
+        { "key": "Service-Worker-Allowed", "value": "/" }
+      ]
+    }
+  ],
+  "rewrites": [
+    { "source": "/((?!sw.js|manifest.json|icon-192.png|icon-512.png).*)", "destination": "/index.html" }
+  ]
+}
