@@ -1,0 +1,206 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+
+    <!-- Background gradient: deep navy to near-black -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#0E0E1C"/>
+      <stop offset="100%" stop-color="#07070F"/>
+    </linearGradient>
+
+    <!-- Card gradient: slightly lighter surface -->
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#1C1C30"/>
+      <stop offset="100%" stop-color="#13132080"/>
+    </linearGradient>
+
+    <!-- Amber accent gradient -->
+    <linearGradient id="amberGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#FFD060"/>
+      <stop offset="100%" stop-color="#F0A500"/>
+    </linearGradient>
+
+    <!-- Amber glow for dots -->
+    <linearGradient id="dotGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#FFE080"/>
+      <stop offset="100%" stop-color="#F0A500"/>
+    </linearGradient>
+
+    <!-- White/today dot gradient -->
+    <linearGradient id="todayGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#E8E8FF"/>
+    </linearGradient>
+
+    <!-- Top glow (ambient amber light) -->
+    <radialGradient id="topGlow" cx="50%" cy="0%" r="60%" fx="50%" fy="0%">
+      <stop offset="0%"   stop-color="#F0A500" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#F0A500" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Card inner glow -->
+    <radialGradient id="cardGlow" cx="50%" cy="0%" r="80%">
+      <stop offset="0%"   stop-color="#F0A500" stop-opacity="0.07"/>
+      <stop offset="100%" stop-color="#F0A500" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Dot glow filter -->
+    <filter id="dotGlow" x="-80%" y="-80%" width="360%" height="360%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Subtle drop shadow for card -->
+    <filter id="cardShadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="8" stdDeviation="20" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+
+    <!-- Icon rounded square clip -->
+    <clipPath id="iconClip">
+      <rect width="512" height="512" rx="112" ry="112"/>
+    </clipPath>
+
+  </defs>
+
+  <!-- ── Base background ──────────────────────────────────────────────── -->
+  <rect width="512" height="512" rx="112" ry="112" fill="url(#bgGrad)"/>
+
+  <!-- Ambient top glow -->
+  <rect width="512" height="512" rx="112" ry="112" fill="url(#topGlow)"/>
+
+  <!-- Subtle grid texture overlay -->
+  <g opacity="0.04" clip-path="url(#iconClip)">
+    <line x1="0" y1="128" x2="512" y2="128" stroke="#F0A500" stroke-width="1"/>
+    <line x1="0" y1="256" x2="512" y2="256" stroke="#F0A500" stroke-width="1"/>
+    <line x1="0" y1="384" x2="512" y2="384" stroke="#F0A500" stroke-width="1"/>
+    <line x1="128" y1="0" x2="128" y2="512" stroke="#F0A500" stroke-width="1"/>
+    <line x1="256" y1="0" x2="256" y2="512" stroke="#F0A500" stroke-width="1"/>
+    <line x1="384" y1="0" x2="384" y2="512" stroke="#F0A500" stroke-width="1"/>
+  </g>
+
+  <!-- ── Calendar card ────────────────────────────────────────────────── -->
+  <g filter="url(#cardShadow)">
+    <rect x="72" y="128" width="368" height="296" rx="36" ry="36"
+          fill="url(#cardGrad)" stroke="url(#amberGrad)" stroke-width="2.5" stroke-opacity="0.55"/>
+  </g>
+
+  <!-- Card inner ambient glow -->
+  <rect x="72" y="128" width="368" height="296" rx="36" ry="36" fill="url(#cardGlow)"/>
+
+  <!-- Horizontal divider inside card (header / body split) -->
+  <line x1="96" y1="210" x2="416" y2="210" stroke="url(#amberGrad)" stroke-width="1.5" stroke-opacity="0.35"/>
+
+  <!-- ── Calendar tab nubs ─────────────────────────────────────────────── -->
+  <!-- Left nub -->
+  <rect x="152" y="100" width="52" height="44" rx="14" ry="14" fill="url(#amberGrad)"/>
+  <!-- Left nub inner shine -->
+  <rect x="158" y="104" width="20" height="8" rx="4" fill="#FFE88A" opacity="0.5"/>
+
+  <!-- Right nub -->
+  <rect x="308" y="100" width="52" height="44" rx="14" ry="14" fill="url(#amberGrad)"/>
+  <!-- Right nub inner shine -->
+  <rect x="314" y="104" width="20" height="8" rx="4" fill="#FFE88A" opacity="0.5"/>
+
+  <!-- ── Month label area (3 lines) ───────────────────────────────────── -->
+  <!-- Simulated "month" text bars -->
+  <rect x="104" y="145" width="80" height="11" rx="5.5" fill="#F0A500" opacity="0.9"/>
+  <rect x="104" y="162" width="50" height="9"  rx="4.5" fill="#F0A500" opacity="0.35"/>
+  <!-- Right: total amount bar -->
+  <rect x="328" y="145" width="56" height="11" rx="5.5" fill="#FFD060" opacity="0.8"/>
+  <rect x="344" y="162" width="40" height="9"  rx="4.5" fill="#F0A500" opacity="0.35"/>
+
+  <!-- ── Dot grid: 5 columns × 4 rows ─────────────────────────────────── -->
+  <!--
+    Grid area: x 104–408, y 228–390
+    Cell w = 60.8, h = 40.5
+    Dot radius = 11
+    States per cell: dim | amber | bright | today | white
+  -->
+
+  <!-- Row 0: dim  amber  dim    dim    bright -->
+  <!-- Col 0: dim -->
+  <circle cx="134" cy="248" r="9" fill="#3C3C58" opacity="0.8"/>
+
+  <!-- Col 1: amber -->
+  <circle cx="195" cy="248" r="13" fill="url(#amberGrad)" opacity="0.18" filter="url(#dotGlow)"/>
+  <circle cx="195" cy="248" r="9"  fill="url(#amberGrad)"/>
+
+  <!-- Col 2: dim -->
+  <circle cx="256" cy="248" r="9" fill="#3C3C58" opacity="0.8"/>
+
+  <!-- Col 3: dim -->
+  <circle cx="317" cy="248" r="9" fill="#3C3C58" opacity="0.8"/>
+
+  <!-- Col 4: amber small -->
+  <circle cx="378" cy="248" r="11" fill="url(#amberGrad)" opacity="0.15" filter="url(#dotGlow)"/>
+  <circle cx="378" cy="248" r="7"  fill="url(#amberGrad)" opacity="0.6"/>
+
+  <!-- Row 1: amber  bright  dim  amber  dim -->
+  <!-- Col 0: amber -->
+  <circle cx="134" cy="294" r="13" fill="url(#amberGrad)" opacity="0.18" filter="url(#dotGlow)"/>
+  <circle cx="134" cy="294" r="9"  fill="url(#amberGrad)"/>
+
+  <!-- Col 1: BRIGHT (bigger, full glow) -->
+  <circle cx="195" cy="294" r="20" fill="#FFD060" opacity="0.12" filter="url(#dotGlow)"/>
+  <circle cx="195" cy="294" r="13" fill="url(#dotGrad)"/>
+  <!-- Shine spot -->
+  <circle cx="191" cy="290" r="4"  fill="#FFF8D0" opacity="0.6"/>
+
+  <!-- Col 2: dim -->
+  <circle cx="256" cy="294" r="9" fill="#3C3C58" opacity="0.8"/>
+
+  <!-- Col 3: amber -->
+  <circle cx="317" cy="294" r="13" fill="url(#amberGrad)" opacity="0.18" filter="url(#dotGlow)"/>
+  <circle cx="317" cy="294" r="9"  fill="url(#amberGrad)"/>
+
+  <!-- Col 4: dim -->
+  <circle cx="378" cy="294" r="9" fill="#3C3C58" opacity="0.8"/>
+
+  <!-- Row 2: dim  amber  dim  TODAY  amber -->
+  <!-- Col 0: dim -->
+  <circle cx="134" cy="340" r="9" fill="#3C3C58" opacity="0.8"/>
+
+  <!-- Col 1: amber -->
+  <circle cx="195" cy="340" r="13" fill="url(#amberGrad)" opacity="0.15" filter="url(#dotGlow)"/>
+  <circle cx="195" cy="340" r="8"  fill="url(#amberGrad)" opacity="0.75"/>
+
+  <!-- Col 2: dim -->
+  <circle cx="256" cy="340" r="9" fill="#3C3C58" opacity="0.8"/>
+
+  <!-- Col 3: TODAY (white dot + amber ring) -->
+  <circle cx="317" cy="340" r="20" fill="#F0A500" opacity="0.08" filter="url(#dotGlow)"/>
+  <circle cx="317" cy="340" r="17" fill="none" stroke="url(#amberGrad)" stroke-width="2.5" opacity="0.8"/>
+  <circle cx="317" cy="340" r="11" fill="url(#todayGrad)"/>
+  <circle cx="313" cy="336" r="4"  fill="white" opacity="0.5"/>
+
+  <!-- Col 4: amber -->
+  <circle cx="378" cy="340" r="13" fill="url(#amberGrad)" opacity="0.18" filter="url(#dotGlow)"/>
+  <circle cx="378" cy="340" r="9"  fill="url(#amberGrad)"/>
+
+  <!-- Row 3: amber  dim  amber  dim  dim -->
+  <!-- Col 0: amber -->
+  <circle cx="134" cy="384" r="11" fill="url(#amberGrad)" opacity="0.15" filter="url(#dotGlow)"/>
+  <circle cx="134" cy="384" r="7"  fill="url(#amberGrad)" opacity="0.7"/>
+
+  <!-- Col 1: dim -->
+  <circle cx="195" cy="384" r="9" fill="#3C3C58" opacity="0.8"/>
+
+  <!-- Col 2: amber -->
+  <circle cx="256" cy="384" r="11" fill="url(#amberGrad)" opacity="0.15" filter="url(#dotGlow)"/>
+  <circle cx="256" cy="384" r="7"  fill="url(#amberGrad)" opacity="0.7"/>
+
+  <!-- Col 3: dim -->
+  <circle cx="317" cy="384" r="9" fill="#3C3C58" opacity="0.8"/>
+
+  <!-- Col 4: dim -->
+  <circle cx="378" cy="384" r="9" fill="#3C3C58" opacity="0.5"/>
+
+  <!-- ── Card border highlight (top edge shine) ──────────────────────── -->
+  <rect x="108" y="128" width="296" height="2" rx="1" fill="url(#amberGrad)" opacity="0.4"/>
+
+  <!-- ── Bottom card edge glow line ──────────────────────────────────── -->
+  <rect x="140" y="422" width="232" height="1.5" rx="0.75" fill="url(#amberGrad)" opacity="0.2"/>
+
+</svg>
