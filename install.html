@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SpendLog — Install</title>
+  <link rel="manifest" href="/manifest.json"/>
+  <meta name="theme-color" content="#0f0f12"/>
+  <link rel="apple-touch-icon" href="/icon-192.png"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"/>
+  <style>
+    :root {
+      --bg: #0f0f12; --surface: #18181d; --surface2: #222228;
+      --border: rgba(255,255,255,0.07); --accent: #f0a500;
+      --text: #f0f0f8; --muted: #7070a0;
+      --sans: 'Outfit', system-ui, sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+    button { cursor: pointer; border: none; background: none; font-family: inherit; color: inherit; }
+
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 24px;
+      background: rgba(15,15,18,0.85); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border); z-index: 10;
+    }
+    .logo { display: flex; align-items: center; gap: 10px; font-size: 1.1rem; font-weight: 800; letter-spacing: -0.03em; }
+    .logo-mark { width: 32px; height: 32px; background: var(--accent); border-radius: 9px; display: flex; align-items: center; justify-content: center; }
+    .logo-mark svg { width: 18px; height: 18px; }
+    .open-btn { padding: 9px 20px; background: var(--accent); color: #000; font-weight: 700; font-size: 0.85rem; border-radius: 100px; text-decoration: none; }
+
+    .hero {
+      min-height: 100dvh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center; padding: 100px 24px 60px;
+      background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(240,165,0,0.07) 0%, transparent 100%);
+    }
+    .badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 14px; background: rgba(240,165,0,0.1);
+      border: 1px solid rgba(240,165,0,0.2); border-radius: 100px;
+      font-size: 0.8rem; font-weight: 600; color: var(--accent);
+      margin-bottom: 28px;
+    }
+    .badge span { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; display: inline-block; }
+    h1 { font-size: clamp(2.4rem, 7vw, 4.5rem); font-weight: 800; letter-spacing: -0.04em; line-height: 1.05; margin-bottom: 20px; }
+    h1 em { font-style: italic; color: var(--accent); }
+    .sub { max-width: 480px; font-size: 1.05rem; color: var(--muted); line-height: 1.7; margin-bottom: 40px; }
+
+    .cta { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-bottom: 60px; }
+    .btn-main {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 16px 32px; background: var(--accent); color: #000;
+      font-weight: 800; font-size: 1rem; border-radius: 100px;
+      box-shadow: 0 0 40px rgba(240,165,0,0.25);
+      transition: transform 0.15s; text-decoration: none;
+    }
+    .btn-main:hover { transform: translateY(-2px); }
+    .btn-open {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 16px 32px; background: var(--surface);
+      border: 1px solid var(--border); color: var(--text);
+      font-weight: 700; font-size: 1rem; border-radius: 100px;
+      text-decoration: none; transition: border-color 0.15s;
+    }
+    .btn-open:hover { border-color: rgba(240,165,0,0.3); }
+
+    /* Phone mockup */
+    .phone-wrap { position: relative; margin-bottom: 80px; }
+    .phone {
+      width: 260px; background: var(--surface);
+      border: 1px solid var(--border); border-radius: 36px; padding: 14px;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.6), 0 0 60px rgba(240,165,0,0.08);
+      margin: 0 auto;
+    }
+    .notch { width: 70px; height: 20px; background: var(--bg); border-radius: 10px; margin: 0 auto 14px; }
+    .screen { display: flex; flex-direction: column; gap: 8px; }
+    .screen-header { display: flex; justify-content: space-between; padding: 0 4px; font-weight: 700; font-size: 0.9rem; }
+    .screen-total { font-family: var(--mono); font-size: 0.8rem; color: var(--accent); }
+    .grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; margin-bottom: 4px; }
+    .cell { aspect-ratio: 1; border-radius: 5px; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 0.5rem; color: var(--muted); }
+    .cell.lo { background: rgba(240,165,0,0.12); color: var(--accent); font-weight: 600; }
+    .cell.hi { background: rgba(240,165,0,0.45); color: #000; font-weight: 700; }
+    .cell.today { box-shadow: inset 0 0 0 1.5px var(--accent); }
+    .cell.empty { background: transparent; }
+    .txn { display: flex; align-items: center; gap: 8px; padding: 8px; background: var(--surface2); border-radius: 10px; }
+    .txn-icon { width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+    .txn-info { flex: 1; }
+    .txn-name { font-size: 0.62rem; font-weight: 600; }
+    .txn-cat { font-size: 0.52rem; color: var(--muted); }
+    .txn-amt { font-family: var(--mono); font-size: 0.65rem; font-weight: 700; }
+
+    /* Steps */
+    .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap: 20px; max-width: 900px; margin: 0 auto 80px; padding: 0 24px; }
+    .step { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; }
+    .step-num { font-family: var(--mono); font-size: 2rem; font-weight: 700; color: rgba(240,165,0,0.3); margin-bottom: 12px; }
+    .step h3 { font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
+    .step p { font-size: 0.875rem; color: var(--muted); line-height: 1.6; }
+
+    /* iOS banner */
+    #ios-banner {
+      display: none; position: fixed; bottom: 0; left: 0; right: 0;
+      background: var(--surface2); border-top: 1px solid rgba(240,165,0,0.2);
+      border-radius: 20px 20px 0 0; padding: 20px 20px 36px; z-index: 200;
+      transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    #ios-banner.show { transform: translateY(0); }
+    .ios-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .ios-title { font-weight: 700; }
+    .ios-close { width: 28px; height: 28px; background: rgba(255,255,255,0.08); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+    .ios-steps { display: flex; flex-direction: column; gap: 10px; }
+    .ios-step { display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: rgba(255,255,255,0.04); border-radius: 10px; font-size: 0.875rem; color: var(--muted); }
+    .ios-step strong { color: var(--text); }
+
+    footer { text-align: center; padding: 32px 24px; border-top: 1px solid var(--border); font-size: 0.82rem; color: var(--muted); }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">
+    <div class="logo-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2.5">
+        <rect x="2" y="5" width="20" height="16" rx="3"/>
+        <path d="M16 3v4M8 3v4M2 11h20"/>
+        <circle cx="8" cy="16" r="1.5" fill="#111"/>
+        <circle cx="12" cy="16" r="1.5" fill="#111"/>
+        <circle cx="16" cy="16" r="1.5" fill="#111"/>
+      </svg>
+    </div>
+    SpendLog
+  </div>
+  <a href="/" class="open-btn">Open App</a>
+</nav>
+
+<section class="hero">
+  <div class="badge"><span></span> Free · No App Store required</div>
+  <h1>Your money,<br><em>mapped in time.</em></h1>
+  <p class="sub">SpendLog connects to your bank and automatically logs every purchase into a beautiful spending calendar the moment it happens.</p>
+
+  <div class="cta">
+    <button class="btn-main" id="install-btn" onclick="handleInstall()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 16l-4-4h2.5V4h3v8H16l-4 4z"/><path d="M20 18H4"/></svg>
+      Add to Home Screen
+    </button>
+    <a href="/" class="btn-open">Open App →</a>
+  </div>
+
+  <div class="phone-wrap">
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="screen">
+        <div class="screen-header"><span>March 2026</span><span class="screen-total">$2,140</span></div>
+        <div class="grid">
+          <div class="cell empty"></div><div class="cell empty"></div><div class="cell empty"></div><div class="cell empty"></div><div class="cell empty"></div><div class="cell empty"></div><div class="cell lo">1</div>
+          <div class="cell">2</div><div class="cell lo">3</div><div class="cell">4</div><div class="cell hi">5</div><div class="cell">6</div><div class="cell lo">7</div><div class="cell">8</div>
+          <div class="cell lo">9</div><div class="cell">10</div><div class="cell">11</div><div class="cell lo">12</div><div class="cell">13</div><div class="cell hi">14</div><div class="cell lo">15</div>
+          <div class="cell">16</div><div class="cell">17</div><div class="cell lo">18</div><div class="cell">19</div><div class="cell">20</div><div class="cell today">21</div><div class="cell">22</div>
+        </div>
+        <div class="txn">
+          <div class="txn-icon" style="background:rgba(249,115,22,0.15)">🍔</div>
+          <div class="txn-info"><div class="txn-name">Chipotle</div><div class="txn-cat">Food & Drink</div></div>
+          <div class="txn-amt" style="color:var(--accent)">$13.75</div>
+        </div>
+        <div class="txn">
+          <div class="txn-icon" style="background:rgba(168,85,247,0.15)">🛍️</div>
+          <div class="txn-info"><div class="txn-name">Nike</div><div class="txn-cat">Shopping</div></div>
+          <div class="txn-amt">$120.00</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="steps">
+  <div class="step"><div class="step-num">01</div><h3>Install the app</h3><p>Tap "Add to Home Screen" — no App Store, no download, no account needed.</p></div>
+  <div class="step"><div class="step-num">02</div><h3>Connect your bank</h3><p>Link via Teller's secure flow. Read-only access. Your credentials never touch our servers.</p></div>
+  <div class="step"><div class="step-num">03</div><h3>Spend normally</h3><p>Every purchase auto-imports to the correct date on your calendar the moment it posts.</p></div>
+</div>
+
+<footer>© 2026 SpendLog · Bank data secured by Teller</footer>
+
+<div id="ios-banner">
+  <div class="ios-head"><span class="ios-title">Install SpendLog</span><button class="ios-close" onclick="closeBanner()">✕</button></div>
+  <div class="ios-steps">
+    <div class="ios-step">1️⃣ &nbsp;Tap the <strong>Share button ⎋</strong> at the bottom of Safari</div>
+    <div class="ios-step">2️⃣ &nbsp;Scroll down and tap <strong>"Add to Home Screen"</strong></div>
+    <div class="ios-step">3️⃣ &nbsp;Tap <strong>"Add"</strong> — SpendLog appears on your home screen</div>
+  </div>
+</div>
+
+<script>
+let deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('install-btn').textContent = '⬇ Add to Home Screen';
+});
+
+function isIOS() {
+  return /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+}
+
+function handleInstall() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
+  } else if (isIOS()) {
+    document.getElementById('ios-banner').style.display = 'block';
+    setTimeout(() => document.getElementById('ios-banner').classList.add('show'), 10);
+  } else {
+    window.location.href = '/';
+  }
+}
+
+function closeBanner() {
+  document.getElementById('ios-banner').classList.remove('show');
+  setTimeout(() => document.getElementById('ios-banner').style.display = 'none', 400);
+}
+
+window.addEventListener('appinstalled', () => {
+  document.getElementById('install-btn').textContent = '✓ Installed!';
+  document.getElementById('install-btn').style.background = '#20d48a';
+  setTimeout(() => window.location.href = '/', 1500);
+});
+
+// Auto-show iOS banner after 2s
+if (isIOS() && !navigator.standalone) {
+  setTimeout(() => {
+    document.getElementById('ios-banner').style.display = 'block';
+    setTimeout(() => document.getElementById('ios-banner').classList.add('show'), 10);
+  }, 2000);
+}
+</script>
+</body>
+</html>
